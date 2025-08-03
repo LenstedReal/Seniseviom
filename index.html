@@ -1,0 +1,244 @@
+<!DOCTYPE html><html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Benimle Barışır Mısın</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  height: 100%;
+  background: #000;
+  color: #fff;
+  font-family: 'Orbitron', monospace, sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  overflow: hidden;
+  position: relative;
+}
+
+canvas#bgParticles {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, #100010 0%, #000000 80%);
+}
+
+.glow-text {
+  font-size: 4.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 0.2em;
+  text-shadow:
+    0 0 10px #FF005C,
+    0 0 30px #FF005C,
+    0 0 60px #FF005C,
+    0 0 100px #FF005C;
+  z-index: 2;
+}
+
+.heart {
+  font-size: 5rem;
+  margin: 20px 0;
+  animation: pulse 1.5s infinite ease-in-out;
+  filter: drop-shadow(0 0 6px #FF005C);
+  z-index: 2;
+  cursor: pointer;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 6px #FF005C);}
+  50% { transform: scale(1.2); filter: drop-shadow(0 0 20px #FF4A85);}
+}
+
+.btn-container {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  z-index: 2;
+}
+
+button {
+  background: #111;
+  border: 2px solid #FF005C;
+  border-radius: 8px;
+  color: #FF005C;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 8px 18px;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 0 10px #FF005C,
+    inset 0 0 5px #FF005C;
+}
+
+button:hover {
+  background: #FF005C;
+  color: #000;
+  box-shadow:
+    0 0 20px #FF005C,
+    inset 0 0 10px #FF4A85;
+}
+
+@media (max-width: 600px) {
+  .glow-text { font-size: 3rem; letter-spacing: 0.15em; }
+  .heart { font-size: 4rem; }
+  button { font-size: 0.9rem; padding: 6px 14px; }
+}
+
+  </style>
+</head>
+<body><canvas id="bgParticles"></canvas>
+
+<div class="glow-text" id="displayText">SENİ SEVİYORUM</div>
+<div class="heart" id="heart">❤️</div>
+<div class="btn-container" id="langButtons"></div><audio id="phonkAudio" loop preload="auto" src="https://cdn.jsdelivr.net/gh/jackieho/phonk-music-loop@main/phonk_loop.mp3"></audio> <audio id="clickSound" preload="auto" src="https://cdn.pixabay.com/download/audio/2023/03/06/audio_18b39ce8e8.mp3?filename=ui-confirmation-1-102204.mp3"></audio>
+
+<script>
+  const phrases = {
+    tr: { text: "SENİ SEVİYORUM", voice: "tr-TR" },
+    en: { text: "I LOVE YOU", voice: "en-US" },
+    de: { text: "ICH LIEBE DICH", voice: "de-DE" },
+    ru: { text: "Я ТЕБЯ ЛЮБЛЮ", voice: "ru-RU" },
+    es: { text: "TE QUIERO", voice: "es-ES" },
+    fr: { text: "JE T'AIME", voice: "fr-FR" },
+    it: { text: "TI AMO", voice: "it-IT" },
+    ja: { text: "愛してる", voice: "ja-JP" },
+    zh: { text: "我爱你", voice: "zh-CN" },
+    ar: { text: "أحبك", voice: "ar-SA" },
+    nl: { text: "IK HOU VAN JOU", voice: "nl-NL" },
+    hi: { text: "मैं तुमसे प्यार करता हूँ", voice: "hi-IN" },
+    el: { text: "Σ' αγαπώ", voice: "el-GR" },
+    pt: { text: "EU TE AMO", voice: "pt-PT" },
+    vi: { text: "ANH YÊU EM", voice: "vi-VN" },
+    fa: { text: "دوستت دارم", voice: "fa-IR" },
+    pl: { text: "KOCHAM CIĘ", voice: "pl-PL" },
+    cs: { text: "MILUJI TĚ", voice: "cs-CZ" }
+  };
+
+  const displayText = document.getElementById("displayText");
+  const heart = document.getElementById("heart");
+  const langButtons = document.getElementById("langButtons");
+  const audio = document.getElementById("phonkAudio");
+  const clickSound = document.getElementById("clickSound");
+
+  let currentLang = "tr";
+  let isBlackHeart = false;
+
+  for (const lang in phrases) {
+    const btn = document.createElement("button");
+    btn.textContent = lang.toUpperCase();
+    btn.title = phrases[lang].text;
+    btn.onclick = () => {
+      currentLang = lang;
+      isBlackHeart = false;
+      updateDisplay();
+      speakIt();
+      playAudio();
+      clickSound.play();
+    };
+    langButtons.appendChild(btn);
+ }
+
+  heart.onclick = () => {
+  isBlackHeart = !isBlackHeart;
+  updateDisplay();
+  speakIt();
+  playAudio();
+
+  // Güm güm sesi için sıfırla ve çal
+  clickSound.pause();
+  clickSound.currentTime = 0;
+  clickSound.play().catch(e => console.warn('Ses çalma hatası:', e));
+  };
+
+
+ 
+
+  function updateDisplay() {
+    displayText.textContent = phrases[currentLang].text;
+    heart.textContent = isBlackHeart ? "🖤" : "❤️";
+  }
+
+  function playAudio() {
+    try {
+      audio.volume = 0.4;
+      audio.play();
+    } catch {}
+  }
+
+  function speakIt() {
+    if ('speechSynthesis' in window) {
+      const utter = new SpeechSynthesisUtterance(phrases[currentLang].text);
+      utter.lang = phrases[currentLang].voice;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utter);
+    }
+  }
+
+  updateDisplay();
+
+  // --- Particle Engine ---
+  const canvas = document.getElementById('bgParticles');
+  const ctx = canvas.getContext('2d');
+  let w, h, particlesArray = [];
+
+  class Particle {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * w;
+      this.y = Math.random() * h;
+      this.size = Math.random() * 2 + 1;
+      this.speedX = (Math.random() - 0.5) * 0.8;
+      this.speedY = (Math.random() - 0.5) * 0.8;
+      this.color = `rgba(255,0,92,${Math.random() * 0.5 + 0.5})`;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      if(this.x > w) this.x = 0; else if(this.x < 0) this.x = w;
+      if(this.y > h) this.y = 0; else if(this.y < 0) this.y = h;
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.shadowColor = this.color;
+      ctx.shadowBlur = 15;
+      ctx.fillStyle = this.color;
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function initParticles() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    particlesArray = [];
+    for (let i = 0; i < 120; i++) {
+      particlesArray.push(new Particle());
+    }
+  }
+
+  function animateParticles() {
+    ctx.clearRect(0, 0, w, h);
+    for (let p of particlesArray) {
+      p.update();
+      p.draw();
+    }
+    requestAnimationFrame(animateParticles);
+  }
+
+  window.addEventListener("resize", initParticles);
+  initParticles();
+  animateParticles();
+</script></body>
+</html>
