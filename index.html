@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="tr" class="notranslate" translate="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="google" content="notranslate" />
+  <title>Seni Seviyorum - 100 Languages</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght=700;900&display=swap');
+    
+    * { 
+      margin: 0; padding: 0; box-sizing: border-box; 
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    html, body {
+      height: 100vh;
+      width: 100vw;
+      background: #000;
+      color: #fff;
+      font-family: 'Orbitron', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow: hidden !important;
+      position: relative;
+      user-select: none;
+    }
+
+    canvas#bgParticles {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+      display: block;
+      background: radial-gradient(circle at center, #100010 0%, #000000 80%);
+    }
+
+    .main-layout {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100vw; 
+      height: 100vh;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: clamp(55px, 7vh, 85px) 0;
+      pointer-events: none;
+    }
+
+    @media (min-width: 768px) {
+      .main-layout {
+        height: 100%;
+        max-height: 820px; 
+        justify-content: center;
+        gap: 35px;
+        padding: 20px 0;
+      }
+    }
+
+    .button-cloud {
+      width: 98%;
+      max-width: 1300px;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr)); 
+      gap: 3px;
+      padding: 4px;
+      pointer-events: auto;
+    }
+    
+    @media (min-width: 768px) {
+      .button-cloud {
+        grid-template-columns: repeat(10, minmax(0, 1fr));
+        gap: 5px;
+      }
+    }
+
+    .center-stage {
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      pointer-events: auto;
+    }
+
+    .glow-text {
+      font-size: clamp(1.2rem, 4.5vw, 2.6rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      line-height: 1.2;
+      color: #fff;
+      text-shadow:
+        0 0 10px #FF005C,
+        0 0 30px #FF005C,
+        0 0 60px #FF005C,
+        0 0 100px #FF005C;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    .heart {
+      font-size: clamp(2.3rem, 7.5vw, 3.5rem);
+      cursor: pointer;
+      animation: pulse 1.3s infinite ease-in-out;
+      filter: drop-shadow(0 0 6px #FF005C);
+      transition: transform 0.1s;
+      line-height: 1;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 6px #FF005C); }
+      50% { transform: scale(1.2); filter: drop-shadow(0 0 20px #FF4A85) saturate(1.3); }
+    }
+
+    button.lang-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(4, 4, 4, 0.9);
+      border: 1.2px solid #FF005C;
+      border-radius: 4px;
+      color: #FF005C;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      height: clamp(24px, 3.3vh, 38px);
+      font-size: clamp(8px, 1.15vh, 10.5px);
+      padding: 2px 4px;
+      cursor: pointer;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: border-color 0.1s, background 0.1s, box-shadow 0.1s;
+      box-shadow: 0 0 6px rgba(255, 0, 92, 0.2);
+    }
+
+    @media (max-width: 767px) {
+      button.lang-btn.long-text {
+        font-size: clamp(6.2px, 0.9vh, 8px) !important;
+        letter-spacing: -0.05em !important;
+      }
+    }
+
+    @media (min-width: 768px) {
+      button.lang-btn {
+        font-size: 11px;
+        letter-spacing: 0.02em;
+      }
+      button.lang-btn.long-text {
+        font-size: 9.5px;
+        letter-spacing: -0.02em;
+      }
+      button.lang-btn:hover {
+        background: rgba(255, 0, 92, 0.15);
+        box-shadow: 0 0 8px #FF005C;
+      }
+    }
+    
+    button.lang-btn:active { transform: scale(0.95); }
+    button.lang-btn.active {
+      background: #FF005C;
+      color: #000;
+      box-shadow: 0 0 12px #FF005C, inset 0 0 2px #fff;
+    }
+
+    .toggle-panel {
+      position: fixed;
+      top: clamp(12px, 1.8vh, 25px); 
+      right: 15px;
+      z-index: 10;
+      pointer-events: auto;
+    }
+    
+    .toggle-panel button {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      border-radius: 4px;
+      color: #00F0FF;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 10px;
+      padding: 3px 8px;
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(0, 240, 255, 0.1);
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    @media (min-width: 768px) {
+      .toggle-panel {
+        top: 20px;
+        right: 25px;
+      }
+      .toggle-panel button {
+        font-size: 12px;
+        padding: 5px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="bgParticles"></canvas>
+
+  <div class="toggle-panel">
+    <button id="toggleLang">TR</button>
+  </div>
+
+  <div class="main-layout">
+    <div class="button-cloud top" id="topGrid"></div>
+    
+    <div class="center-stage">
+      <div class="glow-text" id="displayText">SENİ SEVİYORUM</div>
+      <div class="heart" id="heart">💗</div>
+    </div>
+    
+    <div class="button-cloud bottom" id="bottomGrid"></div>
+  </div>
+
+  <audio id="phonkAudio" loop preload="auto" src="https://cdn.jsdelivr.net/gh/jackieho/phonk-music-loop@main/phonk_loop.mp3"></audio> 
+  <audio id="clickSound" preload="auto" src="https://cdn.pixabay.com/download/audio/2023/03/06/audio_18b39ce8e8.mp3?filename=ui-confirmation-1-102204.mp3"></audio>
+
+<script>
+  const phrases = {
+    tr: { text: "SENİ SEVİYORUM", tr: "TÜRKÇE", en: "TURKISH", v: "tr-TR" },
+    en: { text: "I LOVE YOU", tr: "İNGİLİZCE", en: "ENGLISH", v: "en-US" },
+    de: { text: "ICH LIEBE DICH", tr: "ALMANCA", en: "GERMAN", v: "de-DE" },
+    ru: { text: "Я ТЕБЯ ЛЮБЛЮ", tr: "RUSÇA", en: "RUSSIAN", v: "ru-RU" },
+    es: { text: "TE QUIERO", tr: "İSPANYOLCA", en: "SPANISH", v: "es-ES" },
+    fr: { text: "JE T'AIME", tr: "FRANSIZCA", en: "FRENCH", v: "fr-FR" },
+    it: { text: "TI AMO", tr: "İTALYANCA", en: "ITALIAN", v: "it-IT" },
+    ja: { text: "愛してる", tr: "JAPONCA", en: "JAPANESE", v: "ja-JP" },
+    zh: { text: "我爱你", tr: "ÇİNCE", en: "CHINESE", v: "zh-CN" },
+    ar: { text: "أحبك", tr: "ARAPÇA", en: "ARABIC", v: "ar-SA" },
+    pt: { text: "EU TE AMO", tr: "PORTEKİZCE", en: "PORTUGUESE", v: "pt-PT" },
+    ko: { text: "사랑해", tr: "KORECE", en: "KOREAN", v: "ko-KR" },
+    hi: { text: "मैं तुमसे प्यार करता हूँ", tr: "HİNTÇE", en: "HINDI", v: "hi-IN" },
+    nl: { text: "IK HOU VAN JOU", tr: "HOLLANDACA", en: "DUTCH", v: "nl-NL" },
+    sv: { text: "JAG ÄLSKAR DIG", tr: "İSVEÇÇE", en: "SWEDISH", v: "sv-SE" },
+    pl: { text: "KOCHAM CIĘ", tr: "LEHÇE", en: "POLISH", v: "pl-PL" },
+    el: { text: "Σ' ΑΓΑΠΩ", tr: "YUNANCA", en: "GREEK", v: "el-GR" },
+    vi: { text: "ANH YÊU EM", tr: "VİETNAMCA", en: "VIETNAMESE", v: "vi-VN" },
+    th: { text: "ฉันรักคุณ", tr: "TAYCA", en: "THAI", v: "th-TH" },
+    id: { text: "AKU CINTA KAMU", tr: "ENDONEZCE", en: "BAHASA INDONESIA", v: "id-ID" },
+    az: { text: "SƏNİ SEVİRƏM", tr: "AZERİCE", en: "AZERBAIJANI", v: "az-AZ" },
+    kk: { text: "МЕН СЕНІ СҮЙЕМІН", tr: "KAZAKÇA", en: "KAZAKH", v: "kk-KZ" },
+    uz: { text: "MEN SENI SEVAMAN", tr: "ÖZBEKÇE", en: "UZBEK", v: "uz-UZ" },
+    uk: { text: "Я ТЕБЕ КОХАЮ", tr: "UKRAYNACA", en: "UKRAINIAN", v: "uk-UA" },
+    hu: { text: "SZERETLEK", tr: "MACARCA", en: "HUNGARIAN", v: "hu-HU" },
+    cs: { text: "MILUJI TÊ", tr: "ÇEKÇE", en: "CZECH", v: "cs-CZ" },
+    ro: { text: "TE IUBESC", tr: "RUMENCE", en: "ROMANIAN", v: "ro-RO" },
+    bg: { text: "ОБИЧАМ ТЕ", tr: "BULGARCA", en: "BULGARIAN", v: "bg-BG" },
+    fa: { text: "دوستت دارم", tr: "FARSÇA", en: "PERSIAN", v: "fa-IR" },
+    he: { text: "אני אוهב אותך", tr: "İBRANİCE", en: "HEBREW", v: "he-IL" },
+    fi: { text: "MINÄ RAKASTAN", tr: "FİNCE", en: "FINNISH", v: "fi-FI" },
+    da: { text: "JEG ELSKER DIG", tr: "DANCA", en: "DANISH", v: "da-DK" },
+    no: { text: "JEG ELSKER DEG", tr: "NORVEÇÇE", en: "NORWEGIAN", v: "no-NO" },
+    hr: { text: "VOLIM TE", tr: "HIRVATÇA", en: "CROATIAN", v: "hr-HR" },
+    sr: { text: "ВОЛИМ ТЕ", tr: "SIRPÇA", en: "SERBIAN", v: "sr-RS" },
+    lt: { text: "AŠ TAVE MYLIU", tr: "LİTVANCA", en: "LITHUANIAN", v: "lt-LT" },
+    lv: { text: "ES TEVI MĪLU", tr: "LETONCA", en: "LATVIAN", v: "lv-LV" },
+    et: { text: "MA ARMASTAN SIND", tr: "ESTONCA", en: "ESTONIAN", v: "et-EE" },
+    sl: { text: "LJUBIM TE", tr: "SLOVENCE", en: "SLOVENIAN", v: "sl-SI" },
+    sk: { text: "MILUJEM ŤA", tr: "SLOVAKÇA", en: "SLOVAL", v: "sk-SK" },
+    bn: { text: "আমি তোমাকে", tr: "BENGALCE", en: "BENGALI", v: "bn-BD" },
+    ur: { text: "میں آپ سے محبت", tr: "URDUCA", en: "URDU", v: "ur-PK" },
+    ta: { text: "உன்னை காதலிக்கிறேன்", tr: "TAMİLCE", en: "TAMIL", v: "ta-IN" },
+    te: { text: "నిన్ను ప్రేమిస్తున్నాను", tr: "TELUGUCA", en: "TELUGU", v: "te-IN" },
+    mr: { text: "तुझ्यावर प्रेम आहे", tr: "MARATHİCE", en: "MARATHI", v: "mr-IN" },
+    gu: { text: "હું તને પ્રેમ કરું છું", tr: "GUCERATÇA", en: "GUJARATI", v: "gu-IN" },
+    kn: { text: "ನಿನ್ನನ್ನು ಪ್ರೀತಿಸುತ್ತೇನೆ", tr: "KANNADACA", en: "KANNADA", v: "kn-IN" },
+    ml: { text: "ഞാൻ സ്നേഹിക്കുന്നു", tr: "MALAYALAMCA", en: "MALAYALAM", v: "ml-IN" },
+    pa: { text: "ਮੈਂ ਪਿਆਰ ਕਰਦਾ ਹਾਂ", tr: "PENCAPÇA", en: "PUNJABI", v: "pa-IN" },
+    la: { text: "TE AMO", tr: "LATİNCE", en: "LATIN", v: "la-VA" },
+    bs: { text: "VOLIM TE", tr: "BOŞNAKÇA", en: "BOSNIAN", v: "bs-BA" },
+    cy: { text: "RWY'N DY GARU DI", tr: "GALLERCE", en: "WELSH", v: "cy-GB" },
+    eo: { text: "MI AMAS VIN", tr: "ESPERANTO", en: "ESPERANTO", v: "eo" },
+    ga: { text: "TÁIM I NGRÁ LEAT", tr: "İRLANDACA", en: "IRISH", v: "ga-IE" },
+    gd: { text: "THA GAOL AGAM ORT", tr: "İSKOÇ GALCESİ", en: "SCOTTISH GAELIC", v: "gd-GB" },
+    gl: { text: "ÁMOTE", tr: "GALİÇYACA", en: "GALICIAN", v: "gl-ES" },
+    is: { text: "ÉG ELSKA ÞIG", tr: "İZLANDACA", en: "ICELANDIC", v: "is-IS" },
+    ka: { text: "მიყვარხар", tr: "GÜRCÜCE", en: "GEORGIAN", v: "ka-GE" },
+    mk: { text: "ТЕ САКАМ", tr: "MAKEDONCA", en: "MACEDONIAN", v: "mk-MK" },
+    mt: { text: "INĦOBBOK", tr: "MALTACA", en: "MALTESE", v: "mt-MT" },
+    sq: { text: "TË DUA", tr: "ARNAVUTÇA", en: "ALBANIAN", v: "sq-AL" },
+    sw: { text: "NAKUPENDA", tr: "SVAHİLİ", en: "SWAHILI", v: "sw-KE" },
+    am: { text: "እወድሃለሁ", tr: "AMHARCA", en: "AMHARIC", v: "am-ET" },
+    hy: { text: "ԵՍ ՔԵԶ ՍԻՐՈՒՄ ԵՄ", tr: "ERMENİCE", en: "ARMENIAN", v: "hy-AM" },
+    eu: { text: "MAITE ZAITUT", tr: "BASKÇA", en: "BASQUE", v: "eu-ES" },
+    af: { text: "EK HET JOU LIEF", tr: "AFRIKAANS", en: "AFRIKAANS", v: "af-ZA" },
+    mn: { text: "БИ ЧАМД ХАЙРТАЙ", tr: "MOĞOLCA", en: "MONGOLIAN", v: "mn-MN" },
+    ms: { text: "SAYA SAYANG KAMU", tr: "MALAYCA", en: "MALAY", v: "ms-MY" },
+    yi: { text: "איך האָב דיך ליב", tr: "YİDİŞ", en: "YIDDISH", v: "yi-001" },
+    so: { text: "WAAN KU JECE LAHAY", tr: "SOMALİCE", en: "SOMALI", v: "so-SO" },
+    tg: { text: "ДУСТАТ ДОРАМ", tr: "TACİKÇE", en: "TAJIK", v: "tg-TJ" },
+    ku: { text: "EZ TE HEZ DIKIM", tr: "K*RTÇE", en: "K*RDISH", v: "ku-TR" },
+    tl: { text: "MAHAL KITA", tr: "TAGALOG", en: "TAGALOG", v: "tl-PH" },
+    km: { text: "ញុមស្រឡាញ់អ្នក", tr: "KMERCE", en: "KHMER", v: "km-KH" },
+    lo: { text: "ຂ້ອຍຮັກເຈົ້າ", tr: "LAOCA", en: "LAO", v: "lo-LA" },
+    my: { text: "မင်းကိုချစ်တယ်", tr: "BURMACA", en: "BURMESE", v: "my-MM" },
+    ne: { text: "म तिमीलाई माया गर्छु", tr: "NEPALCE", en: "NEPALI", v: "ne-NP" },
+    si: { text: "මම ඔයාට ආදරෙයි", tr: "SİNHALICE", en: "SINHALA", v: "si-LK" },
+    jv: { text: "AKU TRESNO KARO KOWE", tr: "CAVA DILI", en: "JAVANESE", v: "jv-ID" },
+    su: { text: "ABDI BOGOH KA ANJEUN", tr: "SUNDA DILI", en: "SUNDANESE", v: "su-ID" },
+    mg: { text: "TIAKO IANAO", tr: "MALGAŞÇA", en: "MALAGASY", v: "mg-MG" },
+    mi: { text: "AROHA AHAU KI A KOE", tr: "MAORİCE", en: "MAORI", v: "mi-NZ" },
+    haw: { text: "ALOHA WAU IĀ ʻOE", tr: "HAVAYCA", en: "HAWAIIAN", v: "haw-US" },
+    sm: { text: "OU TE ALOFA IA TE OE", tr: "SAMOACA", en: "SAMOAN", v: "sm-WS" },
+    ca: { text: "T'ESTIMO", tr: "KATALANCA", en: "CATALAN", v: "ca-ES" },
+    be: { text: "Я ЦЯБЕ КАХАЮ", tr: "BELARUSÇA", en: "BELARUSIAN", v: "be-BY" },
+    ky: { text: "МЕН СЕНИ СҮЙӨМ", tr: "KIRGIZCA", en: "KYRGYZ", v: "ky-KG" },
+    tt: { text: "МИН СИНЕ ЯРАТАМ", tr: "TATARCA", en: "TATAR", v: "tt-RU" },
+    ba: { text: "МИН ҺИНЕ ЯРАТАМ", tr: "BAŞKIRTÇA", en: "BASHKIR", v: "ba-RU" },
+    cv: { text: "ЭПӖ САНА ЮРАТАТӐП", tr: "ÇUVAŞÇA", en: "CHUVASH", v: "cv-RU" },
+    ps: { text: "زَه دَرسَره مِينه لَرم", tr: "PEŞTUCA", en: "PASHTO", v: "ps-AF" },
+    sd: { text: "مان توهان سان پيار ڪريان ٿo", tr: "SİNDHİCE", en: "SINDHI", v: "sd-PK" },
+    ug: { text: "مەن سىزنى ياخشى كۆرىمەن", tr: "UYGURCA", en: "UYGHUR", v: "ug-CN" },
+    or: { text: "ମୁଁ ତուਮକୁ ଭଲ ପାଏ", tr: "ODIA", en: "ODIA", v: "or-IN" },
+    as: { text: "মই তোমাক ভাল পাওঁ", tr: "ASAMCA", en: "ASSAMESE", v: "as-IN" },
+    mai: { text: "ಹಮ್મ્ तोहरा सँ प्रेम करैत छ", tr: "MAİTHİLİ", en: "MAITHILI", v: "mai-IN" },
+    bho: { text: "हम तोहसे प्यार करेली", tr: "BHOJPURİ", en: "BHOJPURI", v: "bho-IN" },
+    yo: { text: "MO NIFẸ RẸ", tr: "YORUBACA", en: "YORUBA", v: "yo-NG" },
+    ig: { text: "A HỤRỤ M GỊ N'ANYA", tr: "İGBO", en: "IGBO", v: "ig-NG" },
+    zu: { text: "NGIYAKUTHANDA", tr: "ZULUCA", en: "ZULU", v: "zu-ZA" }
+  };
+
+  const display = document.getElementById("displayText");
+  const heart = document.getElementById("heart");
+  const topGrid = document.getElementById("topGrid");
+  const bottomGrid = document.getElementById("bottomGrid");
+  const toggleBtn = document.getElementById("toggleLang");
+  const audio = document.getElementById("phonkAudio");
+  const clickSound = document.getElementById("clickSound");
+
+  const heartCombo = ["💗", "🖤", "❤️‍🩹"];
+  let heartIndex = 0;
+  let currentLang = "tr";
+  let currentUiLang = "tr";
+  let audioUnlocked = false;
+
+  function renderGrids() {
+    topGrid.innerHTML = "";
+    bottomGrid.innerHTML = "";
+    
+    const keys = Object.keys(phrases);
+    const half = 50; 
+    const topKeys = keys.slice(0, half);
+    const bottomKeys = keys.slice(half);
+
+    const createBtn = (lang) => {
+      const btn = document.createElement("button");
+      btn.className = "lang-btn";
+      if (lang === currentLang && window.userHasClicked) btn.classList.add("active");
+      
+      const labelText = currentUiLang === "tr" ? phrases[lang].tr : phrases[lang].en;
+      btn.textContent = labelText;
+      if (labelText.length > 10) btn.classList.add("long-text");
+      
+      btn.onclick = () => {
+        window.userHasClicked = true;
+        currentLang = lang;
+        updateDisplay();
+        setActiveButton();
+        speakIt();
+        playAudio();
+        clickSound.currentTime = 0;
+        clickSound.play().catch(()=>{});
+      };
+      return btn;
+    };
+
+    topKeys.forEach(lang => topGrid.appendChild(createBtn(lang)));
+    bottomKeys.forEach(lang => bottomGrid.appendChild(createBtn(lang)));
+  }
+
+  function setActiveButton() {
+    document.querySelectorAll(".lang-btn").forEach(btn => {
+      btn.classList.remove("active");
+      const targetText = currentUiLang === "tr" ? phrases[currentLang].tr : phrases[currentLang].en;
+      if (btn.textContent === targetText) btn.classList.add("active");
+    });
+  }
+
+  function updateDisplay() {
+    display.textContent = phrases[currentLang].text;
+    heart.textContent = heartCombo[heartIndex];
+  }
+
+  heart.onclick = () => {
+    heartIndex = (heartIndex + 1) % heartCombo.length;
+    updateDisplay();
+    speakIt();
+    playAudio();
+    clickSound.currentTime = 0;
+    clickSound.play().catch(()=>{});
+  };
+
+  toggleBtn.onclick = () => {
+    currentUiLang = currentUiLang === "tr" ? "en" : "tr";
+    toggleBtn.textContent = currentUiLang === "tr" ? "TR" : "EN";
+    renderGrids();
+    updateDisplay();
+  };
+
+  function playAudio() { 
+    audio.volume = 0.4;
+    audio.play().catch(() => {
+        // Tarayıcı kısıtlamasına takılırsa sessiz kal, hata verme
+    });
+  }
+
+  function speakIt() {
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(phrases[currentLang].text);
+      utter.lang = phrases[currentLang].v;
+      utter.rate = 1.15; 
+      speechSynthesis.speak(utter);
+    }
+  }
+
+  renderGrids();
+  updateDisplay();
+
+  const canvas = document.getElementById('bgParticles');
+  const ctx = canvas.getContext('2d');
+  let w, h, particlesArray = [];
+
+  class Particle {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * w;
+      this.y = Math.random() * h;
+      this.size = Math.random() * 2 + 1;
+      this.speedX = (Math.random() - 0.5) * 0.8;
+      this.speedY = (Math.random() - 0.5) * 0.8;
+      this.color = `rgba(255, 0, 92, ${Math.random() * 0.5 + 0.5})`;
+    }
+    update() {
+      this.x += this.speedX; this.y += this.speedY;
+      if(this.x > w) this.x = 0; else if(this.x < 0) this.x = w;
+      if(this.y > h) this.y = 0; else if(this.y < 0) this.y = h;
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.shadowColor = this.color;
+      ctx.shadowBlur = 15;
+      ctx.fillStyle = this.color;
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function initParticles() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    particlesArray = [];
+    for (let i = 0; i < 120; i++) particlesArray.push(new Particle());
+  }
+
+  function animateParticles() {
+    ctx.clearRect(0, 0, w, h);
+    for (let p of particlesArray) { p.update(); p.draw(); }
+    requestAnimationFrame(animateParticles);
+  }
+
+  window.addEventListener("resize", () => {
+    if(Math.abs(w - window.innerWidth) > 30 || Math.abs(h - window.innerHeight) > 30) {
+      initParticles();
+    }
+  });
+
+  initParticles();
+  animateParticles();
+
+  setInterval(() => {
+    heartIndex = (heartIndex + 1) % heartCombo.length;
+    updateDisplay();
+  }, 15000);
+</script>
+</body>
+</html>
